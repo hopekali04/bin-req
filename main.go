@@ -34,6 +34,21 @@ func main() {
 		return c.Status(statusCode).JSON(resData)
 	})
 
+	app.Post("/postMe", func(c *fiber.Ctx) error {
+
+		agent := fiber.Post("https://httpbin.org/post")
+		agent.Body(c.Body()) // set body
+
+		statusCode, body, errs := agent.Bytes()
+		if len(errs) > 0 {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"errs": errs,
+			})
+		}
+
+		return c.Status(statusCode).Send(body)
+	})
+
 	// Start server
 	app.Listen(":3000")
 }
