@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -13,7 +14,7 @@ func main() {
 	app := fiber.New()
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		
+
 		resp, err := http.Get("https://httpbin.org/get")
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).SendString("Error making GET request")
@@ -80,6 +81,24 @@ func main() {
 		return c.SendString(string(body))
 	})
 
+	app.Post("/postWithdata", func(c *fiber.Ctx) error {
+
+		// JSON payload
+		payload := `{"id": 123, "username": "hop"}`
+
+		resp, err := http.Post("https://httpbin.org/post", "application/json", strings.NewReader(payload))
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).SendString("Error making POST request with parameters")
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).SendString("Error reading response body")
+		}
+
+		return c.SendString(string(body))
+	})
 	// Start server
 	app.Listen(":3000")
 }
